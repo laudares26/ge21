@@ -345,7 +345,7 @@ export const resources: Resource[] = [
     escutaCidada: false,
     servicoCidadao: true,
     geodesign: true,
-    appUrl: "PLACEHOLDER_CLIENT",
+    appUrl: "https://dist-uiufzglb.devinapps.com",
     hasApp: true,
   },
   {
@@ -363,7 +363,7 @@ export const resources: Resource[] = [
     escutaCidada: false,
     servicoCidadao: true,
     geodesign: true,
-    appUrl: "PLACEHOLDER_CADASTRO",
+    appUrl: "https://dist-esjzbwcs.devinapps.com",
     hasApp: true,
   },
 ];
