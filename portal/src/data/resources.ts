@@ -330,4 +330,40 @@ export const resources: Resource[] = [
     geodesign: true,
     hasApp: false,
   },
+  {
+    id: 26,
+    title: "Urbanismo Histórico - Visualização Temporal",
+    description:
+      "App para visualização de diversas fases temporais de bens históricos.",
+    features: [
+      "Visualizar imagens de satélite de diferentes anos para cada bem patrimonial",
+      "Selecionar bens tombados no mapa interativo",
+      "Navegar pela linha do tempo com controle deslizante de anos",
+      "Consultar dados cadastrais e significância histórica de cada bem",
+    ],
+    salaSituacao: true,
+    escutaCidada: false,
+    servicoCidadao: true,
+    geodesign: true,
+    appUrl: "PLACEHOLDER_CLIENT",
+    hasApp: true,
+  },
+  {
+    id: 27,
+    title: "Urbanismo Histórico - Cadastro",
+    description:
+      "App para visualização de diversas fases temporais de bens históricos.",
+    features: [
+      "Cadastrar novos bens patrimoniais com formulário completo",
+      "Gerenciar bens existentes (editar, visualizar, exportar)",
+      "Localizar bens no mapa interativo com polígono vetorial",
+      "Gerar ficha cadastral em PDF de cada bem patrimonial",
+    ],
+    salaSituacao: true,
+    escutaCidada: false,
+    servicoCidadao: true,
+    geodesign: true,
+    appUrl: "PLACEHOLDER_CADASTRO",
+    hasApp: true,
+  },
 ];
