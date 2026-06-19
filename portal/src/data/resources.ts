@@ -474,4 +474,39 @@ export const resources: Resource[] = [
     appUrl: "http://54.173.85.244/geoportal-front/",
     hasApp: true,
   },
+  {
+    id: 34,
+    title: "Usucapião Digital",
+    description:
+      "Recurso que pode estar disponível em plataforma de gestão da Prefeitura Municipal: Ferramenta que permite de forma interativa, a partir de múltiplas camadas de informação geográfica, imagens, dados ambientais e de infraestrutura e suas séries históricas, permitir uma interpretação e análise da evolução do entorno de uma área de usucapião.\n\nAplicação para apoio aos técnicos municipais para análise de processos de Usucapião protocolados no Licenciamento Digital – LD, auxiliando na localização do objeto de estudo a partir da pesquisa por endereço o técnico poderá selecionar em uma lista de resultados o logradouro desejado e obter maiores informações sobre os registros existentes nas bases de dados oficiais e histórica da prefeitura incidente na área requerida no processo.\n\nEsta é uma aplicação para uso exclusivo do técnico.",
+    features: [
+      "Consulta a base de endereços e IPTU para identificação do lote ou área requerida",
+      "Consultar camadas de dados de referência do acervo de anos anteriores",
+      "Gerar croqui de apoio ao processo",
+    ],
+    salaSituacao: true,
+    escutaCidada: false,
+    servicoCidadao: true,
+    geodesign: false,
+    appUrl: "http://54.173.85.244/usucapiao/",
+    hasApp: true,
+  },
+  {
+    id: 35,
+    title: "Pede Placas",
+    description:
+      "Recurso que pode estar disponível em plataforma de gestão da Prefeitura Municipal: Ferramenta que permite a solicitação de serviço de implantação de placa de logradouro, de forma interativa o demandante registre a solicitação e acompanha o andamento do processo pela empresa responsável. Permitindo consulta geográfica e acompanhamento do status.",
+    features: [
+      "Solicitar implantação de placa de logradouro de forma interativa",
+      "Registrar solicitação com localização geográfica",
+      "Acompanhar o andamento do processo pela empresa responsável",
+      "Consultar status das solicitações por mapa ou atributos",
+    ],
+    salaSituacao: false,
+    escutaCidada: true,
+    servicoCidadao: true,
+    geodesign: false,
+    appUrl: "http://54.173.85.244/pede-placa/",
+    hasApp: true,
+  },
 ];
