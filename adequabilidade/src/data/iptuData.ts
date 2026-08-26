@@ -18,7 +18,7 @@ export const iptuLotes: IptuLote[] = [
     bairro: "Meireles",
     area: 450,
     proprietario: "João Silva",
-    zoneamento: "ZOM-1",
+    zoneamento: "Área A",
     coordinates: [
       [-3.7260, -38.5110],
       [-3.7260, -38.5100],
@@ -33,7 +33,7 @@ export const iptuLotes: IptuLote[] = [
     bairro: "Meireles",
     area: 820,
     proprietario: "Maria Oliveira",
-    zoneamento: "ZOM-2",
+    zoneamento: "Área B",
     coordinates: [
       [-3.7235, -38.5130],
       [-3.7235, -38.5118],
@@ -48,7 +48,7 @@ export const iptuLotes: IptuLote[] = [
     bairro: "Varjota",
     area: 360,
     proprietario: "Carlos Santos",
-    zoneamento: "ZOC-1",
+    zoneamento: "Área C",
     coordinates: [
       [-3.7320, -38.5080],
       [-3.7320, -38.5070],
@@ -63,7 +63,7 @@ export const iptuLotes: IptuLote[] = [
     bairro: "Aldeota",
     area: 1200,
     proprietario: "Ana Pereira",
-    zoneamento: "ZOM-3",
+    zoneamento: "Área B",
     coordinates: [
       [-3.7340, -38.5150],
       [-3.7340, -38.5135],
@@ -78,7 +78,7 @@ export const iptuLotes: IptuLote[] = [
     bairro: "Meireles",
     area: 540,
     proprietario: "Pedro Lima",
-    zoneamento: "ZOM-1",
+    zoneamento: "Área A",
     coordinates: [
       [-3.7280, -38.5060],
       [-3.7280, -38.5048],
@@ -93,7 +93,7 @@ export const iptuLotes: IptuLote[] = [
     bairro: "Mucuripe",
     area: 680,
     proprietario: "Lucia Fernandes",
-    zoneamento: "ZOR-1",
+    zoneamento: "Área D",
     coordinates: [
       [-3.7220, -38.5020],
       [-3.7220, -38.5008],
@@ -108,7 +108,7 @@ export const iptuLotes: IptuLote[] = [
     bairro: "Aldeota",
     area: 390,
     proprietario: "Roberto Costa",
-    zoneamento: "ZOC-2",
+    zoneamento: "Área C",
     coordinates: [
       [-3.7360, -38.5170],
       [-3.7360, -38.5160],
@@ -123,7 +123,7 @@ export const iptuLotes: IptuLote[] = [
     bairro: "Dionísio Torres",
     area: 510,
     proprietario: "Fernanda Souza",
-    zoneamento: "ZOR-2",
+    zoneamento: "Área E",
     coordinates: [
       [-3.7400, -38.5100],
       [-3.7400, -38.5088],
@@ -138,7 +138,7 @@ export const iptuLotes: IptuLote[] = [
     bairro: "Meireles",
     area: 950,
     proprietario: "Marcos Almeida",
-    zoneamento: "ZOM-2",
+    zoneamento: "Área B",
     coordinates: [
       [-3.7305, -38.5165],
       [-3.7305, -38.5150],
@@ -153,7 +153,7 @@ export const iptuLotes: IptuLote[] = [
     bairro: "Centro",
     area: 290,
     proprietario: "Juliana Rocha",
-    zoneamento: "ZOC-1",
+    zoneamento: "Área C",
     coordinates: [
       [-3.7250, -38.5240],
       [-3.7250, -38.5230],

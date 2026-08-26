@@ -219,6 +219,19 @@ export default function MainPage() {
         </div>
       </header>
 
+      {/* Info banner */}
+      {!selectedCnae && (
+        <div style={styles.cnaeBanner}>
+          <span style={{ fontSize: 12, color: "#333" }}>
+            <strong>Como funciona:</strong> 1) selecione primeiro a atividade
+            (CNAE); 2) o mapa destaca as áreas onde essa atividade é permitida.
+            O resultado indica locais potenciais e não constitui aprovação
+            legal final. As áreas exibidas (A a G) são demonstrativas; as
+            camadas Quadras/Lotes vêm do GeoServer IDE SEUMA.
+          </span>
+        </div>
+      )}
+
       {/* Selected CNAE banner */}
       {selectedCnae && (
         <div style={styles.cnaeBanner}>

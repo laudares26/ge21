@@ -22,8 +22,8 @@ import {
   GlobalOutlined,
   CheckCircleOutlined,
 } from "@ant-design/icons";
-import { resources } from "./data/resources";
-import type { Resource } from "./data/resources";
+import { resources, publicoInfo, getPublico } from "./data/resources";
+import type { Resource, Publico } from "./data/resources";
 
 const eixoConfig = [
   { key: "salaSituacao", label: "Sala de Situação", color: "#1890ff", icon: <EnvironmentOutlined /> },
@@ -48,6 +48,11 @@ function App() {
   });
 
   const appsImplementados = resources.filter((r) => r.hasApp);
+  const publicoOrder: Publico[] = [
+    "consulta_cidada",
+    "gestor_interno",
+    "gestor_projeto",
+  ];
 
   return (
     <ConfigProvider locale={ptBR} theme={{ token: { colorPrimary: "#5b73a6" } }}>
@@ -95,7 +100,7 @@ function App() {
           <div style={styles.heroStats}>
             <div style={styles.statCard}>
               <span style={{ fontSize: 28, fontWeight: 700, color: "#5b73a6" }}>
-                25
+                {resources.length}
               </span>
               <span style={{ fontSize: 12, color: "#666" }}>Recursos</span>
             </div>
@@ -124,81 +129,112 @@ function App() {
             <CheckCircleOutlined style={{ color: "#52c41a" }} /> Aplicativos
             Disponíveis para Teste
           </h2>
-          <div style={styles.appsGrid}>
-            {appsImplementados.map((app) => (
-              <Card
-                key={app.id}
-                hoverable
-                size="small"
-                style={styles.appCard}
-                styles={{ body: { padding: 16 } }}
-              >
-                <div style={styles.appCardHeader}>
-                  <Badge
-                    count={app.id}
-                    style={{ backgroundColor: "#5b73a6" }}
-                  />
-                  <h4 style={{ margin: 0, fontSize: 14, flex: 1 }}>
-                    {app.title}
-                  </h4>
-                </div>
-                <p
+          {publicoOrder.map((pub) => {
+            const apps = appsImplementados.filter(
+              (a) => getPublico(a) === pub
+            );
+            if (apps.length === 0) return null;
+            return (
+              <div key={pub} style={{ marginBottom: 24 }}>
+                <h3
                   style={{
-                    fontSize: 12,
-                    color: "#666",
-                    margin: "8px 0",
-                    lineHeight: 1.5,
-                    display: "-webkit-box",
-                    WebkitLineClamp: 3,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
+                    fontSize: 15,
+                    fontWeight: 600,
+                    margin: "12px 0 4px",
+                    color: "#333",
                   }}
                 >
-                  {app.description.split("\n")[0]}
+                  <Tag color={publicoInfo[pub].color}>
+                    {publicoInfo[pub].label}
+                  </Tag>
+                </h3>
+                <p style={{ fontSize: 12, color: "#888", margin: "0 0 12px" }}>
+                  {publicoInfo[pub].descricao}
                 </p>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 4,
-                    flexWrap: "wrap",
-                    marginBottom: 8,
-                  }}
-                >
-                  {eixoConfig.map(
-                    (e) =>
-                      app[e.key] && (
+                <div style={styles.appsGrid}>
+                  {apps.map((app) => (
+                    <Card
+                      key={app.id}
+                      hoverable
+                      size="small"
+                      style={styles.appCard}
+                      styles={{ body: { padding: 16 } }}
+                    >
+                      <div style={styles.appCardHeader}>
+                        <Badge
+                          count={app.id}
+                          style={{ backgroundColor: "#5b73a6" }}
+                        />
+                        <h4 style={{ margin: 0, fontSize: 14, flex: 1 }}>
+                          {app.title}
+                        </h4>
+                      </div>
+                      <p
+                        style={{
+                          fontSize: 12,
+                          color: "#666",
+                          margin: "8px 0",
+                          lineHeight: 1.5,
+                          display: "-webkit-box",
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {app.description.split("\n")[0]}
+                      </p>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 4,
+                          flexWrap: "wrap",
+                          marginBottom: 8,
+                        }}
+                      >
                         <Tag
-                          key={e.key}
-                          color={e.color}
+                          color={publicoInfo[getPublico(app)].color}
                           style={{ fontSize: 10 }}
                         >
-                          {e.label}
+                          {publicoInfo[getPublico(app)].label}
                         </Tag>
-                      )
-                  )}
+                        {eixoConfig.map(
+                          (e) =>
+                            app[e.key] && (
+                              <Tag
+                                key={e.key}
+                                color={e.color}
+                                style={{ fontSize: 10 }}
+                              >
+                                {e.label}
+                              </Tag>
+                            )
+                        )}
+                      </div>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <Button
+                          type="primary"
+                          size="small"
+                          icon={<LinkOutlined />}
+                          href={app.appUrl}
+                          target="_blank"
+                          style={{ background: "#5b73a6" }}
+                        >
+                          Acessar App
+                        </Button>
+                        <Button
+                          size="small"
+                          icon={<ReadOutlined />}
+                          onClick={() => setSelectedResource(app)}
+                        >
+                          Documentação
+                        </Button>
+                      </div>
+                    </Card>
+                  ))}
                 </div>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <Button
-                    type="primary"
-                    size="small"
-                    icon={<LinkOutlined />}
-                    href={app.appUrl}
-                    target="_blank"
-                    style={{ background: "#5b73a6" }}
-                  >
-                    Acessar App
-                  </Button>
-                  <Button
-                    size="small"
-                    icon={<ReadOutlined />}
-                    onClick={() => setSelectedResource(app)}
-                  >
-                    Documentação
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
+              </div>
+            );
+          })}
         </section>
 
         {/* EIXOS */}
@@ -305,6 +341,12 @@ function App() {
                       </Tag>
                     </Tooltip>
                   )}
+                  <Tag
+                    color={publicoInfo[getPublico(r)].color}
+                    style={{ fontSize: 9 }}
+                  >
+                    {publicoInfo[getPublico(r)].label}
+                  </Tag>
                   {eixoConfig.map(
                     (e) =>
                       r[e.key] && (
@@ -424,6 +466,9 @@ function App() {
                   marginBottom: 16,
                 }}
               >
+                <Tag color={publicoInfo[getPublico(selectedResource)].color}>
+                  {publicoInfo[getPublico(selectedResource)].label}
+                </Tag>
                 {eixoConfig.map(
                   (e) =>
                     selectedResource[e.key] && (

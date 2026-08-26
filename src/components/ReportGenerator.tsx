@@ -1,23 +1,8 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { IptuLote } from "../data/iptuData";
+import { GEOSERVER_WFS_URL } from "../data/layersData";
 import type { MapLayer } from "../data/layersData";
-
-function pointInPolygon(
-  point: [number, number],
-  polygon: [number, number][]
-): boolean {
-  let inside = false;
-  const [x, y] = point;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const [xi, yi] = polygon[i];
-    const [xj, yj] = polygon[j];
-    const intersect =
-      yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
-    if (intersect) inside = !inside;
-  }
-  return inside;
-}
 
 function distanceDeg(a: [number, number], b: [number, number]): number {
   const R = 6371000;
@@ -31,15 +16,6 @@ function distanceDeg(a: [number, number], b: [number, number]): number {
   return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
 }
 
-function centroid(coords: [number, number][]): [number, number] {
-  const n = coords.length;
-  const sum = coords.reduce(
-    (acc, c) => [acc[0] + c[0], acc[1] + c[1]],
-    [0, 0]
-  );
-  return [sum[0] / n, sum[1] / n];
-}
-
 interface AnalysisRow {
   camada: string;
   elemento: string;
@@ -47,38 +23,101 @@ interface AnalysisRow {
   status: string;
 }
 
-export function analyzeNeighborhood(
+interface WfsFeature {
+  geometry: { type: string; coordinates: unknown } | null;
+  properties: Record<string, unknown>;
+}
+
+function flattenCoords(coordinates: unknown): [number, number][] {
+  const out: [number, number][] = [];
+  const walk = (c: unknown): void => {
+    if (!Array.isArray(c)) return;
+    if (c.length >= 2 && typeof c[0] === "number" && typeof c[1] === "number") {
+      out.push([c[1] as number, c[0] as number]);
+      return;
+    }
+    for (const child of c) walk(child);
+  };
+  walk(coordinates);
+  return out;
+}
+
+function featureName(props: Record<string, unknown>): string {
+  for (const key of ["nome", "name", "nm_uc", "descricao", "tipo", "classe"]) {
+    const v = props[key];
+    if (typeof v === "string" && v.trim()) return v;
+  }
+  return "-";
+}
+
+const ANALYSIS_RADIUS_M = 500;
+const RESTRICTION_DIST_M = 300;
+
+export async function analyzeNeighborhood(
   lote: IptuLote,
   layers: MapLayer[]
-): AnalysisRow[] {
+): Promise<AnalysisRow[]> {
   const rows: AnalysisRow[] = [];
   const center = lote.center as [number, number];
+  const dLat = ANALYSIS_RADIUS_M / 111320;
+  const dLon =
+    ANALYSIS_RADIUS_M / (111320 * Math.cos((center[0] * Math.PI) / 180));
+  const bbox = `${center[0] - dLat},${center[1] - dLon},${center[0] + dLat},${center[1] + dLon},urn:ogc:def:crs:EPSG::4326`;
 
-  for (const layer of layers) {
-    if (layer.id === "lote-fiscal") continue;
-    for (const feat of layer.features) {
-      const coords = feat.coordinates as [number, number][];
-      let dist: number;
-      let inside = false;
+  const wmsLayers = layers.filter((l) => l.visible && l.wmsLayer);
 
-      if (feat.type === "polygon") {
-        inside = pointInPolygon(center, coords);
-        const c = centroid(coords);
-        dist = distanceDeg(center, c);
-      } else {
-        let minD = Infinity;
-        for (const pt of coords) {
-          const d = distanceDeg(center, pt);
-          if (d < minD) minD = d;
-        }
-        dist = minD;
+  const results = await Promise.all(
+    wmsLayers.map(async (layer) => {
+      const typeName = layer.wmsLayer as string;
+      const url =
+        `${GEOSERVER_WFS_URL}?service=WFS&version=2.0.0&request=GetFeature` +
+        `&typeNames=${encodeURIComponent(typeName)}` +
+        `&outputFormat=application/json&srsName=EPSG:4326` +
+        `&count=25&bbox=${encodeURIComponent(bbox)}`;
+      try {
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error(String(resp.status));
+        const data = (await resp.json()) as { features: WfsFeature[] };
+        return { layer, features: data.features || [] };
+      } catch {
+        return { layer, features: null };
       }
+    })
+  );
 
+  for (const { layer, features } of results) {
+    if (features === null) {
       rows.push({
         camada: layer.name,
-        elemento: feat.properties.nome || "-",
-        distancia: inside ? "Dentro da área" : `${Math.round(dist)} m`,
-        status: inside || dist < 300 ? "RESTRIÇÃO" : "OK",
+        elemento: "Serviço indisponível",
+        distancia: "-",
+        status: "N/D",
+      });
+      continue;
+    }
+    if (features.length === 0) {
+      rows.push({
+        camada: layer.name,
+        elemento: `Nenhum elemento num raio de ${ANALYSIS_RADIUS_M} m`,
+        distancia: `> ${ANALYSIS_RADIUS_M} m`,
+        status: "OK",
+      });
+      continue;
+    }
+    for (const feat of features.slice(0, 5)) {
+      const coords = flattenCoords(feat.geometry?.coordinates);
+      let minD = Infinity;
+      for (const pt of coords) {
+        const d = distanceDeg(center, pt);
+        if (d < minD) minD = d;
+      }
+      const dist = minD === Infinity ? NaN : minD;
+      rows.push({
+        camada: layer.name,
+        elemento: featureName(feat.properties),
+        distancia: Number.isNaN(dist) ? "-" : `${Math.round(dist)} m`,
+        status:
+          !Number.isNaN(dist) && dist < RESTRICTION_DIST_M ? "PRÓXIMO" : "OK",
       });
     }
   }
@@ -135,7 +174,7 @@ export function generatePDF(lote: IptuLote, analysis: AnalysisRow[]): void {
     didParseCell: (data) => {
       if (data.column.index === 3 && data.section === "body") {
         const val = data.cell.raw as string;
-        if (val === "RESTRIÇÃO") {
+        if (val === "PRÓXIMO") {
           data.cell.styles.textColor = [220, 20, 60];
           data.cell.styles.fontStyle = "bold";
         } else {
@@ -149,7 +188,7 @@ export function generatePDF(lote: IptuLote, analysis: AnalysisRow[]): void {
   doc.setFontSize(8);
   doc.setTextColor(120, 120, 120);
   doc.text(
-    "Documento gerado automaticamente pelo sistema de Análise de Vizinhança — SEUMA",
+    "Documento gerado automaticamente pelo sistema de Análise de Vizinhança — SEUMA. Dados espaciais: GeoServer IDE SEUMA (Fortaleza).",
     14,
     pageH - 10
   );

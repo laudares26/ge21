@@ -2,13 +2,15 @@ import { useEffect, useRef } from "react";
 import {
   MapContainer,
   TileLayer,
+  WMSTileLayer,
+  LayersControl,
   Polygon,
-  Polyline,
   Tooltip,
   useMap,
   ZoomControl,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { GEOSERVER_WMS_URL } from "../data/layersData";
 import type { MapLayer } from "../data/layersData";
 import type { IptuLote } from "../data/iptuData";
 
@@ -54,52 +56,41 @@ export default function MapView({
       zoomControl={false}
       attributionControl={false}
     >
-      <TileLayer
-        url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-        attribution="Esri"
-      />
-      <TileLayer
-        url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
-        attribution="Esri Labels"
-      />
+      <LayersControl position="topright">
+        <LayersControl.BaseLayer checked name="Ortofoto (imagem de satélite)">
+          <TileLayer
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            attribution="Esri"
+          />
+        </LayersControl.BaseLayer>
+        <LayersControl.BaseLayer name="OpenStreetMap (ruas e toponímia)">
+          <TileLayer
+            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution="&copy; OpenStreetMap contributors"
+          />
+        </LayersControl.BaseLayer>
+        <LayersControl.Overlay checked name="Nomes de ruas e lugares">
+          <TileLayer
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+            attribution="Esri Labels"
+          />
+        </LayersControl.Overlay>
+      </LayersControl>
       <ZoomControl position="topright" />
 
       {layers
-        .filter((l) => l.visible && l.id !== "lote_fiscal")
-        .map((layer) =>
-          layer.features.map((feat, fi) => {
-            if (layer.type === "polygon") {
-              return (
-                <Polygon
-                  key={`${layer.id}-${fi}`}
-                  positions={feat.coordinates}
-                  pathOptions={{
-                    color: layer.color,
-                    fillColor: layer.color,
-                    fillOpacity: layer.opacity * 0.4,
-                    weight: 2,
-                    opacity: layer.opacity,
-                  }}
-                >
-                  {feat.label && <Tooltip sticky>{feat.label}</Tooltip>}
-                </Polygon>
-              );
-            }
-            return (
-              <Polyline
-                key={`${layer.id}-${fi}`}
-                positions={feat.coordinates}
-                pathOptions={{
-                  color: layer.color,
-                  weight: 3,
-                  opacity: layer.opacity,
-                }}
-              >
-                {feat.label && <Tooltip sticky>{feat.label}</Tooltip>}
-              </Polyline>
-            );
-          })
-        )}
+        .filter((l) => l.visible)
+        .map((layer) => (
+          <WMSTileLayer
+            key={layer.id}
+            url={GEOSERVER_WMS_URL}
+            layers={layer.wmsLayer}
+            format="image/png"
+            transparent
+            opacity={layer.opacity}
+            attribution="GeoServer IDE SEUMA — Prefeitura de Fortaleza"
+          />
+        ))}
 
       {allLotes.map((lote) => {
         const isSelected = selectedLote?.iptu === lote.iptu;

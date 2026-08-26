@@ -126,6 +126,9 @@ export default function MainPage() {
           <BankOutlined style={{ marginRight: 8 }} />
           Urbanismo Histórico - Cadastro de Bens Patrimoniais
         </Title>
+        <span style={{ color: 'rgba(255,255,255,0.75)', fontSize: 11, marginLeft: 12 }}>
+          Ferramenta administrativa (gestor): criação e edição do acervo. Para consulta pública, use a Visualização Temporal.
+        </span>
       </Header>
       <Layout>
         <Content style={{ position: 'relative' }}>

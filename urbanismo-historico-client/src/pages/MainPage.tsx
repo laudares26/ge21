@@ -35,6 +35,9 @@ export default function MainPage() {
           <BankOutlined style={{ marginRight: 8 }} />
           Urbanismo Histórico - Visualização Temporal de Bens Patrimoniais
         </Title>
+        <span style={{ color: 'rgba(255,255,255,0.75)', fontSize: 11, marginLeft: 12 }}>
+          Consulta pública (cidadão): visualização do acervo por período. O cadastro é feito na ferramenta administrativa.
+        </span>
       </Header>
       <Layout>
         <Sider width={320} style={{ background: '#fff', borderRight: '1px solid #f0f0f0', overflow: 'hidden' }}>

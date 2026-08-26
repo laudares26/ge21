@@ -1,7 +1,10 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   MapContainer,
   TileLayer,
+  WMSTileLayer,
+  LayersControl,
+  GeoJSON,
   Polygon,
   Polyline,
   Tooltip,
@@ -9,8 +12,12 @@ import {
   ZoomControl,
   CircleMarker,
 } from "react-leaflet";
+import type { Feature, FeatureCollection } from "geojson";
+import type { Layer } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { LoteComConfinantes } from "../data/iptuData";
+
+const GEOSERVER_WMS_URL = "https://ubigeodesign.ge21gt.cloud/geoserver/RMs/wms";
 
 interface MapViewProps {
   allLotes: LoteComConfinantes[];
@@ -34,6 +41,40 @@ function FlyToLote({ lote, flyKey }: { lote: LoteComConfinantes | null; flyKey: 
   return null;
 }
 
+function featureTooltip(p: Record<string, string> | null): string | null {
+  if (!p) return null;
+  if (p.nome) return `<strong>${p.nome}</strong><br/>Pavimentação: ${p.pavimentac || "-"}`;
+  if (p.lote) return `<strong>Lote ${p.lote}</strong><br/>Distrito ${p.distrito} — Quadra ${p.quadra}`;
+  if (p.quadra) return `<strong>Quadra ${p.quadra}</strong><br/>Distrito ${p.distrito}`;
+  return null;
+}
+
+function GeoJsonLayer({ url, color }: { url: string; color: string }) {
+  const [data, setData] = useState<FeatureCollection | null>(null);
+
+  useEffect(() => {
+    fetch(url)
+      .then((r) => r.json())
+      .then(setData)
+      .catch(() => setData(null));
+  }, [url]);
+
+  if (!data) return null;
+
+  return (
+    <GeoJSON
+      data={data}
+      style={{ color, weight: 1.5, opacity: 0.9, fillOpacity: 0.08 }}
+      onEachFeature={(feature: Feature, lyr: Layer) => {
+        const html = featureTooltip(
+          feature.properties as Record<string, string> | null
+        );
+        if (html) lyr.bindTooltip(html, { sticky: true });
+      }}
+    />
+  );
+}
+
 export default function MapView({
   allLotes,
   selectedLote,
@@ -51,14 +92,44 @@ export default function MapView({
       zoomControl={false}
       attributionControl={false}
     >
-      <TileLayer
-        url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-        attribution="Esri"
-      />
-      <TileLayer
-        url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
-        attribution="Esri Labels"
-      />
+      <LayersControl position="topright">
+        <LayersControl.BaseLayer checked name="Ortofoto (imagem de satélite)">
+          <TileLayer
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            attribution="Esri"
+          />
+        </LayersControl.BaseLayer>
+        <LayersControl.BaseLayer name="OpenStreetMap (ruas e toponímia)">
+          <TileLayer
+            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution="&copy; OpenStreetMap contributors"
+          />
+        </LayersControl.BaseLayer>
+        <LayersControl.Overlay checked name="Nomes de ruas e lugares">
+          <TileLayer
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+            attribution="Esri Labels"
+          />
+        </LayersControl.Overlay>
+        <LayersControl.Overlay checked name="Quadras (SEFIN)">
+          <GeoJsonLayer url="/quadras_sefin.geojson" color="#8c8c8c" />
+        </LayersControl.Overlay>
+        <LayersControl.Overlay checked name="Lotes (SEFIN)">
+          <GeoJsonLayer url="/lotes_sefin.geojson" color="#fadb14" />
+        </LayersControl.Overlay>
+        <LayersControl.Overlay name="Edificações (SEFIN)">
+          <WMSTileLayer
+            url={GEOSERVER_WMS_URL}
+            layers="RMs:Edificacoes_SEFIN"
+            format="image/png"
+            transparent
+            attribution="GeoServer IDE SEUMA — Prefeitura de Fortaleza"
+          />
+        </LayersControl.Overlay>
+        <LayersControl.Overlay name="Trechos de Vias (SEFIN)">
+          <GeoJsonLayer url="/trechos_sefin.geojson" color="#00bcd4" />
+        </LayersControl.Overlay>
+      </LayersControl>
 
       <ZoomControl position="topright" />
 

@@ -1,14 +1,19 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   MapContainer,
   TileLayer,
+  WMSTileLayer,
+  LayersControl,
+  GeoJSON,
   Polygon,
-  Polyline,
   Tooltip,
   useMap,
   ZoomControl,
 } from "react-leaflet";
+import type { Feature, FeatureCollection } from "geojson";
+import type { Layer } from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { GEOSERVER_WMS_URL } from "../data/layersData";
 import type { MapLayer } from "../data/layersData";
 import type { IptuLote } from "../data/iptuData";
 
@@ -34,6 +39,46 @@ function FlyToLote({ lote, flyKey }: { lote: IptuLote | null; flyKey: number }) 
   return null;
 }
 
+function featureTooltip(p: Record<string, string> | null): string | null {
+  if (!p) return null;
+  if (p.nome) return `<strong>${p.nome}</strong><br/>Pavimentação: ${p.pavimentac || "-"}`;
+  if (p.lote) return `<strong>Lote ${p.lote}</strong><br/>Distrito ${p.distrito} — Quadra ${p.quadra}`;
+  if (p.quadra) return `<strong>Quadra ${p.quadra}</strong><br/>Distrito ${p.distrito}`;
+  return null;
+}
+
+function GeoJsonLayer({ layer }: { layer: MapLayer }) {
+  const [data, setData] = useState<FeatureCollection | null>(null);
+
+  useEffect(() => {
+    if (!layer.geojsonUrl) return;
+    fetch(layer.geojsonUrl)
+      .then((r) => r.json())
+      .then(setData)
+      .catch(() => setData(null));
+  }, [layer.geojsonUrl]);
+
+  if (!data) return null;
+
+  return (
+    <GeoJSON
+      data={data}
+      style={{
+        color: layer.color,
+        weight: 1.5,
+        opacity: layer.opacity,
+        fillOpacity: layer.opacity * 0.1,
+      }}
+      onEachFeature={(feature: Feature, lyr: Layer) => {
+        const html = featureTooltip(
+          feature.properties as Record<string, string> | null
+        );
+        if (html) lyr.bindTooltip(html, { sticky: true });
+      }}
+    />
+  );
+}
+
 export default function MapView({
   layers,
   selectedLote,
@@ -51,52 +96,47 @@ export default function MapView({
       zoomControl={false}
       attributionControl={false}
     >
-      <TileLayer
-        url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-        attribution="Esri"
-      />
-      <TileLayer
-        url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
-        attribution="Esri Labels"
-      />
+      <LayersControl position="topright">
+        <LayersControl.BaseLayer checked name="Ortofoto (imagem de satélite)">
+          <TileLayer
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            attribution="Esri"
+          />
+        </LayersControl.BaseLayer>
+        <LayersControl.BaseLayer name="OpenStreetMap (ruas e toponímia)">
+          <TileLayer
+            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution="&copy; OpenStreetMap contributors"
+          />
+        </LayersControl.BaseLayer>
+        <LayersControl.Overlay checked name="Nomes de ruas e lugares">
+          <TileLayer
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+            attribution="Esri Labels"
+          />
+        </LayersControl.Overlay>
+      </LayersControl>
       <ZoomControl position="topright" />
 
       {layers
-        .filter((l) => l.visible)
-        .map((layer) =>
-          layer.features.map((feat, fi) => {
-            if (layer.type === "polygon") {
-              return (
-                <Polygon
-                  key={`${layer.id}-${fi}`}
-                  positions={feat.coordinates}
-                  pathOptions={{
-                    color: layer.color,
-                    fillColor: layer.color,
-                    fillOpacity: layer.opacity * 0.4,
-                    weight: 2,
-                    opacity: layer.opacity,
-                  }}
-                >
-                  {feat.label && <Tooltip sticky>{feat.label}</Tooltip>}
-                </Polygon>
-              );
-            }
-            return (
-              <Polyline
-                key={`${layer.id}-${fi}`}
-                positions={feat.coordinates}
-                pathOptions={{
-                  color: layer.color,
-                  weight: 3,
-                  opacity: layer.opacity,
-                }}
-              >
-                {feat.label && <Tooltip sticky>{feat.label}</Tooltip>}
-              </Polyline>
-            );
-          })
-        )}
+        .filter((l) => l.visible && l.wmsLayer)
+        .map((layer) => (
+          <WMSTileLayer
+            key={layer.id}
+            url={GEOSERVER_WMS_URL}
+            layers={layer.wmsLayer}
+            format="image/png"
+            transparent
+            opacity={layer.opacity}
+            attribution="GeoServer IDE SEUMA — Prefeitura de Fortaleza"
+          />
+        ))}
+
+      {layers
+        .filter((l) => l.visible && l.geojsonUrl)
+        .map((layer) => (
+          <GeoJsonLayer key={layer.id} layer={layer} />
+        ))}
 
       {allLotes.map((lote) => {
         const isSelected = selectedLote?.iptu === lote.iptu;

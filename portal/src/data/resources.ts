@@ -11,6 +11,74 @@ export interface Resource {
   hasApp: boolean;
 }
 
+export type Publico = "consulta_cidada" | "gestor_interno" | "gestor_projeto";
+
+export const publicoInfo: Record<
+  Publico,
+  { label: string; color: string; descricao: string }
+> = {
+  consulta_cidada: {
+    label: "Consulta cidadã",
+    color: "orange",
+    descricao:
+      "Acesso aberto ao cidadão, sem necessidade de login: consulta a mapas, dados e serviços.",
+  },
+  gestor_interno: {
+    label: "Ação do gestor — uso interno",
+    color: "blue",
+    descricao:
+      "Ferramentas administrativas de uso interno do setor público (técnicos e gestores municipais).",
+  },
+  gestor_projeto: {
+    label: "Ação do gestor — acesso cidadão por projeto/login",
+    color: "purple",
+    descricao:
+      "Recursos configurados pelo gestor em que o cidadão participa mediante projeto e login gerenciado, como o IDE Cidadão e o Geodesign.",
+  },
+};
+
+const publicoById: Record<number, Publico> = {
+  1: "consulta_cidada",
+  2: "gestor_interno",
+  3: "consulta_cidada",
+  4: "gestor_interno",
+  5: "gestor_projeto",
+  6: "gestor_interno",
+  7: "consulta_cidada",
+  8: "gestor_interno",
+  9: "consulta_cidada",
+  10: "gestor_interno",
+  11: "consulta_cidada",
+  12: "gestor_interno",
+  13: "gestor_interno",
+  14: "consulta_cidada",
+  15: "gestor_interno",
+  16: "consulta_cidada",
+  17: "consulta_cidada",
+  18: "gestor_interno",
+  19: "gestor_interno",
+  20: "consulta_cidada",
+  21: "gestor_interno",
+  22: "consulta_cidada",
+  23: "consulta_cidada",
+  24: "consulta_cidada",
+  25: "gestor_projeto",
+  26: "consulta_cidada",
+  27: "gestor_interno",
+  28: "gestor_interno",
+  29: "gestor_interno",
+  30: "gestor_projeto",
+  31: "consulta_cidada",
+  32: "consulta_cidada",
+  33: "consulta_cidada",
+  34: "gestor_interno",
+  35: "consulta_cidada",
+};
+
+export function getPublico(r: Resource): Publico {
+  return publicoById[r.id] ?? "consulta_cidada";
+}
+
 export const resources: Resource[] = [
   {
     id: 1,
@@ -265,7 +333,7 @@ export const resources: Resource[] = [
     id: 21,
     title: "Geovisualização Hierárquica",
     description:
-      "Recurso que pode estar disponível em plataforma de gestão da Prefeitura Municipal: Ferramenta dinâmica que permita a interação de múltiplas camadas de informação em diferentes escalas, envolvendo as temáticas como zoneamento, arruamento e imagens de alta resolução. De forma a automatizar a elaboração de croquis integrados com itens de cadastro, permitindo a consulta e a seleção geográfica ou por atributos do cadastro, exemplo IPTU.\n\nOferece uma compreensão abrangente do espaço municipal, começando com o zoneamento da cidade e suas diretrizes. Ela integra ortofotos sobrepostas para apresentar a situação específica de cada lote em relação às permissões e restrições impostas. Desde o macrozoneamento, permite uma visualização progressiva até alcançar o nível do lote, possibilitando ao usuário compreender claramente as atividades permitidas, as possibilidades de prospecção e as ações executáveis em cada área.",
+      "Recurso que pode estar disponível em plataforma de gestão da Prefeitura Municipal: Ferramenta dinâmica que permita a interação de múltiplas camadas de informação em diferentes escalas, envolvendo as temáticas como zoneamento, arruamento e imagens de alta resolução. De forma a automatizar a elaboração de croquis integrados com itens de cadastro, permitindo a consulta e a seleção geográfica ou por atributos do cadastro, exemplo IPTU.\n\nTrata-se de um WebGIS hierárquico: oferece uma compreensão abrangente do espaço municipal, começando com o zoneamento da cidade e suas diretrizes. Ela integra ortofotos sobrepostas para apresentar a situação específica de cada lote em relação às permissões e restrições impostas. Desde o macrozoneamento, permite uma visualização progressiva até alcançar o nível do lote, possibilitando ao usuário compreender claramente as atividades permitidas, as possibilidades de prospecção e as ações executáveis em cada área.",
     salaSituacao: true,
     escutaCidada: true,
     servicoCidadao: true,
@@ -288,7 +356,7 @@ export const resources: Resource[] = [
     id: 23,
     title: "Pede Placas",
     description:
-      "Recurso que pode estar disponível em plataforma de gestão da Prefeitura Municipal: Ferramenta que permite a solicitação de serviço de implantação de placa de logradouro, de forma interativa o demandante registre a solicitação e acompanha o andamento do processo pela empresa responsável. Permitindo consulta geográfica e acompanhamento do status.",
+      "Recurso que pode estar disponível em plataforma de gestão da Prefeitura Municipal: Ferramenta que permite a solicitação de serviço de implantação de placa de logradouro, de forma interativa o demandante registre a solicitação e acompanha o andamento do processo pela empresa responsável. A localização do pedido é informada por clique diretamente no mapa ou pela busca de endereço. Permitindo consulta geográfica e acompanhamento do status.",
     salaSituacao: false,
     escutaCidada: true,
     servicoCidadao: true,
@@ -334,7 +402,7 @@ export const resources: Resource[] = [
     id: 26,
     title: "Urbanismo Histórico - Visualização Temporal",
     description:
-      "App para visualização de diversas fases temporais de bens históricos.",
+      "App de consulta/visualização pública das diversas fases temporais de bens históricos. É a face de consulta do par de aplicações de Urbanismo Histórico: o cadastro e a manutenção do acervo são feitos na aplicação administrativa (Urbanismo Histórico - Cadastro).",
     features: [
       "Visualizar imagens de satélite de diferentes anos para cada bem patrimonial",
       "Selecionar bens tombados no mapa interativo",
@@ -352,7 +420,7 @@ export const resources: Resource[] = [
     id: 27,
     title: "Urbanismo Histórico - Cadastro",
     description:
-      "App para visualização de diversas fases temporais de bens históricos.",
+      "App administrativo/autoral para cadastro e gestão de bens patrimoniais históricos, de uso do gestor/técnico municipal. A consulta pública do acervo é feita na aplicação Urbanismo Histórico - Visualização Temporal.",
     features: [
       "Cadastrar novos bens patrimoniais com formulário completo",
       "Gerenciar bens existentes (editar, visualizar, exportar)",
@@ -424,7 +492,7 @@ export const resources: Resource[] = [
     id: 31,
     title: "Fortaleza Verde",
     description:
-      "Plataforma integrada de gestão ambiental do município de Fortaleza, reunindo recursos relacionados ao Programa de Certificação Ambiental, Plantio Verde de Compensatórias Ambientais e Patrimônio Verde de Cobertura Vegetal. Permite a consulta de bens patrimoniais ambientais, áreas verdes, parques e jardins, a gestão de áreas de plantio compensatório e a identificação de áreas verdes passíveis de adoção, integrando informações geográficas e cadastrais para suporte à gestão ambiental municipal.",
+      "Plataforma integrada de gestão ambiental do município de Fortaleza, reunindo recursos relacionados ao Programa de Certificação Ambiental, Plantio Verde de Compensatórias Ambientais e Patrimônio Verde de Cobertura Vegetal.\n\nA plataforma reúne três frentes distintas: (1) consulta de dados existentes — áreas verdes, parques, jardins e patrimônio verde; (2) solicitação de novos dados/serviços pelo cidadão, como pedidos de poda ou supressão de árvores; e (3) acompanhamento dos processos abertos. Integra informações geográficas e cadastrais para suporte à gestão ambiental municipal.",
     features: [
       "Consultar áreas verdes, parques e jardins do município",
       "Identificar áreas verdes passíveis de adoção (Certificação Ambiental)",
@@ -495,7 +563,7 @@ export const resources: Resource[] = [
     id: 35,
     title: "Pede Placas",
     description:
-      "Recurso que pode estar disponível em plataforma de gestão da Prefeitura Municipal: Ferramenta que permite a solicitação de serviço de implantação de placa de logradouro, de forma interativa o demandante registre a solicitação e acompanha o andamento do processo pela empresa responsável. Permitindo consulta geográfica e acompanhamento do status.",
+      "Recurso que pode estar disponível em plataforma de gestão da Prefeitura Municipal: Ferramenta que permite a solicitação de serviço de implantação de placa de logradouro, de forma interativa o demandante registre a solicitação e acompanha o andamento do processo pela empresa responsável. A localização do pedido é informada por clique diretamente no mapa ou pela busca de endereço. Permitindo consulta geográfica e acompanhamento do status.",
     features: [
       "Solicitar implantação de placa de logradouro de forma interativa",
       "Registrar solicitação com localização geográfica",

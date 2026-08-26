@@ -151,7 +151,13 @@ export default function MainPage() {
               </span>
             </div>
           </div>
-          <h3 style={styles.title}>Geovisualização Hierárquica</h3>
+          <h3 style={styles.title}>
+            Geovisualização Hierárquica
+            <span style={{ display: "block", fontSize: 10, fontWeight: 400, color: "#888" }}>
+              WebGIS hierárquico: navegação progressiva do macrozoneamento até o
+              lote, com camadas reais de Fortaleza (GeoServer IDE SEUMA)
+            </span>
+          </h3>
         </div>
         <div style={styles.headerRight}>
           <Input

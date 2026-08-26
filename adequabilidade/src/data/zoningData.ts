@@ -8,8 +8,8 @@ export interface ZoningArea {
 
 export const zoningAreas: ZoningArea[] = [
   {
-    id: "ZOM-1",
-    nome: "ZOM-1 — Zona de Ocupação Moderada 1",
+    id: "Área A",
+    nome: "Área A — perfil de ocupação moderada 1 (demonstrativo)",
     descricao: "Zona residencial e comercial de médio porte",
     color: "#4CAF50",
     polygons: [
@@ -28,8 +28,8 @@ export const zoningAreas: ZoningArea[] = [
     ],
   },
   {
-    id: "ZOM-2",
-    nome: "ZOM-2 — Zona de Ocupação Moderada 2",
+    id: "Área B",
+    nome: "Área B — perfil de ocupação moderada 2 (demonstrativo)",
     descricao: "Zona mista de maior densidade",
     color: "#8BC34A",
     polygons: [
@@ -48,8 +48,8 @@ export const zoningAreas: ZoningArea[] = [
     ],
   },
   {
-    id: "ZOC",
-    nome: "ZOC — Zona de Ocupação Consolidada",
+    id: "Área C",
+    nome: "Área C — perfil de ocupação consolidada (demonstrativo)",
     descricao: "Zona comercial e serviços consolidada",
     color: "#FF9800",
     polygons: [
@@ -68,8 +68,8 @@ export const zoningAreas: ZoningArea[] = [
     ],
   },
   {
-    id: "ZOR-1",
-    nome: "ZOR-1 — Zona de Ocupação Restrita 1",
+    id: "Área D",
+    nome: "Área D — perfil de ocupação restrita 1 (demonstrativo)",
     descricao: "Zona residencial de baixa densidade",
     color: "#2196F3",
     polygons: [
@@ -82,8 +82,8 @@ export const zoningAreas: ZoningArea[] = [
     ],
   },
   {
-    id: "ZOR-2",
-    nome: "ZOR-2 — Zona de Ocupação Restrita 2",
+    id: "Área E",
+    nome: "Área E — perfil de ocupação restrita 2 (demonstrativo)",
     descricao: "Zona residencial unifamiliar",
     color: "#03A9F4",
     polygons: [
@@ -96,8 +96,8 @@ export const zoningAreas: ZoningArea[] = [
     ],
   },
   {
-    id: "ZOT",
-    nome: "ZOT — Zona de Ocupação Turística",
+    id: "Área F",
+    nome: "Área F — perfil de ocupação turística (demonstrativo)",
     descricao: "Zona turística e hoteleira",
     color: "#9C27B0",
     polygons: [
@@ -110,8 +110,8 @@ export const zoningAreas: ZoningArea[] = [
     ],
   },
   {
-    id: "ZOI",
-    nome: "ZOI — Zona de Ocupação Industrial",
+    id: "Área G",
+    nome: "Área G — perfil de ocupação industrial (demonstrativo)",
     descricao: "Zona industrial e logística",
     color: "#795548",
     polygons: [

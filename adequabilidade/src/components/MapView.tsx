@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react";
 import {
   MapContainer,
   TileLayer,
+  WMSTileLayer,
+  LayersControl,
   Polygon,
   Tooltip,
   useMap,
@@ -10,6 +12,8 @@ import {
 import "leaflet/dist/leaflet.css";
 import type { ZoningArea } from "../data/zoningData";
 import type { IptuLote } from "../data/iptuData";
+
+const GEOSERVER_WMS_URL = "https://ubigeodesign.ge21gt.cloud/geoserver/RMs/wms";
 
 interface MapViewProps {
   zoningAreas: ZoningArea[];
@@ -64,14 +68,44 @@ export default function MapView({
       zoomControl={false}
       attributionControl={false}
     >
-      <TileLayer
-        url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-        attribution="Esri"
-      />
-      <TileLayer
-        url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
-        attribution="Esri Labels"
-      />
+      <LayersControl position="topright">
+        <LayersControl.BaseLayer checked name="Ortofoto (imagem de satélite)">
+          <TileLayer
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            attribution="Esri"
+          />
+        </LayersControl.BaseLayer>
+        <LayersControl.BaseLayer name="OpenStreetMap (ruas e toponímia)">
+          <TileLayer
+            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution="&copy; OpenStreetMap contributors"
+          />
+        </LayersControl.BaseLayer>
+        <LayersControl.Overlay checked name="Nomes de ruas e lugares">
+          <TileLayer
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+            attribution="Esri Labels"
+          />
+        </LayersControl.Overlay>
+        <LayersControl.Overlay name="Quadras (SEFIN)">
+          <WMSTileLayer
+            url={GEOSERVER_WMS_URL}
+            layers="RMs:Quadras_SEFIN"
+            format="image/png"
+            transparent
+            attribution="GeoServer IDE SEUMA — Prefeitura de Fortaleza"
+          />
+        </LayersControl.Overlay>
+        <LayersControl.Overlay name="Lotes (SEFIN)">
+          <WMSTileLayer
+            url={GEOSERVER_WMS_URL}
+            layers="RMs:Lotes_SEFIN"
+            format="image/png"
+            transparent
+            attribution="GeoServer IDE SEUMA — Prefeitura de Fortaleza"
+          />
+        </LayersControl.Overlay>
+      </LayersControl>
 
       <ZoomControl position="topright" />
 

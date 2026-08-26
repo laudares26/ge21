@@ -69,12 +69,13 @@ export default function MainPage() {
     setFlyKey((k) => k + 1);
   };
 
-  const handleReport = (iptu: string) => {
+  const handleReport = async (iptu: string) => {
     const lote = iptuLotes.find((l) => l.iptu === iptu);
     if (!lote) return;
-    const analysis = analyzeNeighborhood(lote, layers);
+    message.loading({ content: "Consultando camadas reais no GeoServer...", key: "report" });
+    const analysis = await analyzeNeighborhood(lote, layers);
     generatePDF(lote, analysis);
-    message.success("Relatório gerado com sucesso!");
+    message.success({ content: "Relatório gerado com sucesso!", key: "report" });
   };
 
   const toggleLayer = (id: string) => {
@@ -130,7 +131,7 @@ export default function MainPage() {
               style={{ width: 240 }}
             />
             <Input
-              placeholder="Pesquise pelo número de IPTU"
+              placeholder="Pesquise pelo número de IPTU (ex.: 0001.001.001)"
               value={searchIptu}
               onChange={(e) => setSearchIptu(e.target.value)}
               onPressEnter={handleSearchIptu}
@@ -149,6 +150,11 @@ export default function MainPage() {
 
       {/* MAP AREA */}
       <div style={styles.mapArea}>
+        <div style={styles.dataNotice}>
+          Camadas do mapa: dados reais de Fortaleza (GeoServer IDE SEUMA —
+          Quadras, Lotes, Edificações SEFIN, UC, Hidrografia etc.). Os registros
+          de IPTU listados são fictícios, apenas para demonstração da consulta.
+        </div>
         {/* Left side buttons */}
         <div style={styles.sideButtons}>
           <Tooltip title="Painel de Camadas">
@@ -280,6 +286,21 @@ const styles: Record<string, React.CSSProperties> = {
   },
   sideBtn: {
     background: "#fff",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+  },
+  dataNotice: {
+    position: "absolute",
+    bottom: 8,
+    left: "50%",
+    transform: "translateX(-50%)",
+    zIndex: 900,
+    background: "rgba(255,255,255,0.92)",
+    padding: "6px 14px",
+    borderRadius: 6,
+    fontSize: 11,
+    color: "#555",
+    maxWidth: 640,
+    textAlign: "center",
     boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
   },
   footer: {
