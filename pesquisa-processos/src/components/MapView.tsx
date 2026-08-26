@@ -1,17 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import {
   MapContainer,
   TileLayer,
   WMSTileLayer,
   LayersControl,
-  GeoJSON,
   Polygon,
   Tooltip,
   useMap,
   ZoomControl,
 } from "react-leaflet";
-import type { Feature, FeatureCollection } from "geojson";
-import type { Layer } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { GEOSERVER_WMS_URL } from "../data/layersData";
 import type { MapLayer } from "../data/layersData";
@@ -21,6 +18,7 @@ interface MapViewProps {
   layers: MapLayer[];
   selectedLote: IptuLote | null;
   allLotes: IptuLote[];
+  filteredLotes: IptuLote[];
   onLoteClick: (iptu: string) => void;
   flyKey: number;
 }
@@ -39,48 +37,16 @@ function FlyToLote({ lote, flyKey }: { lote: IptuLote | null; flyKey: number }) 
   return null;
 }
 
-function featureTooltip(p: Record<string, string> | null): string | null {
-  if (!p) return null;
-  if (p.nome) return `<strong>${p.nome}</strong><br/>Pavimentação: ${p.pavimentac || "-"}`;
-  if (p.lote) return `<strong>Lote ${p.lote}</strong><br/>Distrito ${p.distrito} — Quadra ${p.quadra}`;
-  if (p.quadra) return `<strong>Quadra ${p.quadra}</strong><br/>Distrito ${p.distrito}`;
-  return null;
-}
-
-function GeoJsonLayer({ layer }: { layer: MapLayer }) {
-  const [data, setData] = useState<FeatureCollection | null>(null);
-
-  useEffect(() => {
-    if (!layer.geojsonUrl) return;
-    fetch(layer.geojsonUrl)
-      .then((r) => r.json())
-      .then(setData)
-      .catch(() => setData(null));
-  }, [layer.geojsonUrl]);
-
-  if (!data) return null;
-
-  return (
-    <GeoJSON
-      data={data}
-      style={{
-        color: layer.color,
-        weight: 1.5,
-        opacity: layer.opacity,
-        fillOpacity: layer.opacity * 0.1,
-      }}
-      onEachFeature={(feature: Feature, lyr: Layer) => {
-        const html = featureTooltip(
-          feature.properties as Record<string, string> | null
-        );
-        if (html) lyr.bindTooltip(html, { sticky: true });
-      }}
-    />
-  );
-}
-
-export default function MapView({ layers, selectedLote, allLotes, onLoteClick, flyKey }: MapViewProps) {
+export default function MapView({
+  layers,
+  selectedLote,
+  allLotes,
+  filteredLotes,
+  onLoteClick,
+  flyKey,
+}: MapViewProps) {
   const fortalezaCenter: [number, number] = [-3.7319, -38.5267];
+  const filteredIptus = new Set(filteredLotes.map((l) => l.iptu));
 
   return (
     <MapContainer
@@ -110,11 +76,10 @@ export default function MapView({ layers, selectedLote, allLotes, onLoteClick, f
           />
         </LayersControl.Overlay>
       </LayersControl>
-
       <ZoomControl position="topright" />
 
       {layers
-        .filter((l) => l.visible && l.wmsLayer)
+        .filter((l) => l.visible)
         .map((layer) => (
           <WMSTileLayer
             key={layer.id}
@@ -127,27 +92,26 @@ export default function MapView({ layers, selectedLote, allLotes, onLoteClick, f
           />
         ))}
 
-      {layers
-        .filter((l) => l.visible && l.geojsonUrl)
-        .map((layer) => (
-          <GeoJsonLayer key={layer.id} layer={layer} />
-        ))}
-
       {allLotes.map((lote) => {
         const isSelected = selectedLote?.iptu === lote.iptu;
+        const isFiltered = filteredIptus.has(lote.iptu);
+        const color = isSelected
+          ? "#ff4d4f"
+          : isFiltered
+          ? "#00e5ff"
+          : "#FFFF00";
+
         return (
           <Polygon
             key={lote.iptu}
             positions={lote.coordinates as [number, number][]}
             pathOptions={{
-              color: isSelected ? "#ff4d4f" : "#FFFF00",
-              fillColor: isSelected ? "#ff4d4f" : "#FFFF00",
-              fillOpacity: isSelected ? 0.5 : 0.25,
-              weight: isSelected ? 3 : 1.5,
+              color,
+              fillColor: color,
+              fillOpacity: isSelected ? 0.5 : isFiltered ? 0.4 : 0.15,
+              weight: isSelected ? 3 : isFiltered ? 2.5 : 1,
             }}
-            eventHandlers={{
-              click: () => onLoteClick(lote.iptu),
-            }}
+            eventHandlers={{ click: () => onLoteClick(lote.iptu) }}
           >
             <Tooltip sticky>
               <strong>IPTU: {lote.iptu}</strong>
@@ -155,6 +119,8 @@ export default function MapView({ layers, selectedLote, allLotes, onLoteClick, f
               {lote.endereco}
               <br />
               Área: {lote.area} m²
+              <br />
+              Processos: {lote.processos.length}
             </Tooltip>
           </Polygon>
         );

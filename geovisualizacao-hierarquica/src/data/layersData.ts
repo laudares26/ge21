@@ -1,14 +1,12 @@
 export const GEOSERVER_WMS_URL =
   "https://ubigeodesign.ge21gt.cloud/geoserver/RMs/wms";
-export const GEOSERVER_WFS_URL =
-  "https://ubigeodesign.ge21gt.cloud/geoserver/RMs/ows";
 
 export interface MapLayer {
   id: string;
-  name: string;
-  color: string;
+  nome: string;
   visible: boolean;
   opacity: number;
+  color: string;
   wmsLayer?: string;
   geojsonUrl?: string;
 }
@@ -16,98 +14,106 @@ export interface MapLayer {
 export const defaultLayers: MapLayer[] = [
   {
     id: "quadras",
-    name: "Quadras (SEFIN)",
-    color: "#8c8c8c",
+    nome: "Quadras (SEFIN)",
     visible: true,
     opacity: 0.9,
+    color: "#8c8c8c",
     geojsonUrl: "/quadras_sefin.geojson",
   },
   {
     id: "lotes",
-    name: "Lotes (SEFIN)",
-    color: "#fadb14",
+    nome: "Lotes (SEFIN)",
     visible: true,
     opacity: 0.7,
+    color: "#fadb14",
     geojsonUrl: "/lotes_sefin.geojson",
   },
   {
     id: "edificacoes",
-    name: "Edificações (SEFIN)",
-    color: "#d46b08",
+    nome: "Edificações (SEFIN)",
     visible: false,
     opacity: 0.9,
+    color: "#d46b08",
     wmsLayer: "RMs:Edificacoes_SEFIN",
   },
   {
     id: "trechos",
-    name: "Trechos de Vias (SEFIN)",
-    color: "#595959",
+    nome: "Trechos de Vias (SEFIN)",
     visible: false,
     opacity: 0.9,
+    color: "#595959",
     geojsonUrl: "/trechos_sefin.geojson",
   },
   {
     id: "vias",
-    name: "Vias (Fortaleza)",
-    color: "#434343",
-    visible: false,
+    nome: "Vias (Fortaleza)",
+    visible: true,
     opacity: 0.9,
+    color: "#434343",
     wmsLayer: "RMs:Vias_FOR",
   },
   {
-    id: "bens-arqueologicos",
-    name: "Bens Arqueológicos e Patrimônio",
-    color: "#c41d7f",
-    visible: true,
-    opacity: 0.9,
-    wmsLayer: "RMs:Bens_Arqueologicos_Imoveis_Moveis_FOR",
-  },
-  {
-    id: "turismo-lazer",
-    name: "Turismo e Lazer",
-    color: "#1890ff",
-    visible: false,
-    opacity: 0.9,
-    wmsLayer: "RMs:Turismo_e_Lazer_FOR",
-  },
-  {
-    id: "escolas",
-    name: "Escolas",
-    color: "#722ed1",
-    visible: false,
-    opacity: 0.9,
-    wmsLayer: "RMs:Escolas_FOR",
-  },
-  {
     id: "uc",
-    name: "Unidades de Conservação",
-    color: "#237804",
+    nome: "Unidades de Conservação",
     visible: true,
     opacity: 0.8,
+    color: "#237804",
     wmsLayer: "RMs:UC_Municipal_Estadual_Federal_FOR",
   },
   {
     id: "vegetacao",
-    name: "Vegetação Expressiva",
-    color: "#52c41a",
+    nome: "Vegetação Expressiva",
     visible: false,
     opacity: 0.8,
+    color: "#52c41a",
     wmsLayer: "RMs:Vegetacao_Expressiva_FOR",
   },
   {
     id: "hidro-rede",
-    name: "Hidrografia — Rede",
-    color: "#096dd9",
+    nome: "Hidrografia — Rede",
     visible: true,
     opacity: 0.9,
+    color: "#096dd9",
     wmsLayer: "RMs:Hidro_Rede_FOR",
   },
   {
     id: "hidro-massa",
-    name: "Hidrografia — Massa d'água",
-    color: "#0050b3",
+    nome: "Hidrografia — Massa d'água",
     visible: false,
     opacity: 0.8,
+    color: "#0050b3",
     wmsLayer: "RMs:Hidro_Massa_dagua_FOR",
+  },
+  {
+    id: "escolas",
+    nome: "Escolas",
+    visible: false,
+    opacity: 0.9,
+    color: "#722ed1",
+    wmsLayer: "RMs:Escolas_FOR",
+  },
+  {
+    id: "turismo-lazer",
+    nome: "Turismo e Lazer",
+    visible: false,
+    opacity: 0.9,
+    color: "#1890ff",
+    wmsLayer: "RMs:Turismo_e_Lazer_FOR",
+  },
+  {
+    id: "altimetria",
+    nome: "Altimetria",
+    visible: false,
+    opacity: 0.8,
+    color: "#b37feb",
+    wmsLayer: "RMs:Altimetria_FOR",
+  },
+  {
+    id: "esgoto",
+    nome: "Rede de Esgoto (IBGE)",
+    visible: false,
+    opacity: 0.8,
+    color: "#ad4e00",
+    wmsLayer: "RMs:Rede_de_Esgoto_IBGE_FOR",
   },
 ];

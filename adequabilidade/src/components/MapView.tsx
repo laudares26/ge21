@@ -1,31 +1,37 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import {
   MapContainer,
   TileLayer,
   WMSTileLayer,
   LayersControl,
-  GeoJSON,
   Polygon,
   Tooltip,
   useMap,
   ZoomControl,
 } from "react-leaflet";
-import type { Feature, FeatureCollection } from "geojson";
-import type { Layer } from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { GEOSERVER_WMS_URL } from "../data/layersData";
-import type { MapLayer } from "../data/layersData";
+import type { ZoningArea } from "../data/zoningData";
 import type { IptuLote } from "../data/iptuData";
 
+const GEOSERVER_WMS_URL = "https://ubigeodesign.ge21gt.cloud/geoserver/RMs/wms";
+
 interface MapViewProps {
-  layers: MapLayer[];
+  zoningAreas: ZoningArea[];
+  highlightedZones: string[];
   selectedLote: IptuLote | null;
   allLotes: IptuLote[];
   onLoteClick: (iptu: string) => void;
   flyKey: number;
+  showAllZones: boolean;
 }
 
-function FlyToLote({ lote, flyKey }: { lote: IptuLote | null; flyKey: number }) {
+function FlyToLote({
+  lote,
+  flyKey,
+}: {
+  lote: IptuLote | null;
+  flyKey: number;
+}) {
   const map = useMap();
   const prevRef = useRef<number>(0);
 
@@ -39,48 +45,20 @@ function FlyToLote({ lote, flyKey }: { lote: IptuLote | null; flyKey: number }) 
   return null;
 }
 
-function featureTooltip(p: Record<string, string> | null): string | null {
-  if (!p) return null;
-  if (p.nome) return `<strong>${p.nome}</strong><br/>Pavimentação: ${p.pavimentac || "-"}`;
-  if (p.lote) return `<strong>Lote ${p.lote}</strong><br/>Distrito ${p.distrito} — Quadra ${p.quadra}`;
-  if (p.quadra) return `<strong>Quadra ${p.quadra}</strong><br/>Distrito ${p.distrito}`;
-  return null;
-}
-
-function GeoJsonLayer({ layer }: { layer: MapLayer }) {
-  const [data, setData] = useState<FeatureCollection | null>(null);
-
-  useEffect(() => {
-    if (!layer.geojsonUrl) return;
-    fetch(layer.geojsonUrl)
-      .then((r) => r.json())
-      .then(setData)
-      .catch(() => setData(null));
-  }, [layer.geojsonUrl]);
-
-  if (!data) return null;
-
-  return (
-    <GeoJSON
-      data={data}
-      style={{
-        color: layer.color,
-        weight: 1.5,
-        opacity: layer.opacity,
-        fillOpacity: layer.opacity * 0.1,
-      }}
-      onEachFeature={(feature: Feature, lyr: Layer) => {
-        const html = featureTooltip(
-          feature.properties as Record<string, string> | null
-        );
-        if (html) lyr.bindTooltip(html, { sticky: true });
-      }}
-    />
-  );
-}
-
-export default function MapView({ layers, selectedLote, allLotes, onLoteClick, flyKey }: MapViewProps) {
+export default function MapView({
+  zoningAreas,
+  highlightedZones,
+  selectedLote,
+  allLotes,
+  onLoteClick,
+  flyKey,
+  showAllZones,
+}: MapViewProps) {
   const fortalezaCenter: [number, number] = [-3.7319, -38.5267];
+
+  const visibleZones = showAllZones
+    ? zoningAreas
+    : zoningAreas.filter((z) => highlightedZones.includes(z.id));
 
   return (
     <MapContainer
@@ -109,29 +87,49 @@ export default function MapView({ layers, selectedLote, allLotes, onLoteClick, f
             attribution="Esri Labels"
           />
         </LayersControl.Overlay>
+        <LayersControl.Overlay name="Quadras (SEFIN)">
+          <WMSTileLayer
+            url={GEOSERVER_WMS_URL}
+            layers="RMs:Quadras_SEFIN"
+            format="image/png"
+            transparent
+            attribution="GeoServer IDE SEUMA — Prefeitura de Fortaleza"
+          />
+        </LayersControl.Overlay>
+        <LayersControl.Overlay name="Lotes (SEFIN)">
+          <WMSTileLayer
+            url={GEOSERVER_WMS_URL}
+            layers="RMs:Lotes_SEFIN"
+            format="image/png"
+            transparent
+            attribution="GeoServer IDE SEUMA — Prefeitura de Fortaleza"
+          />
+        </LayersControl.Overlay>
       </LayersControl>
 
       <ZoomControl position="topright" />
 
-      {layers
-        .filter((l) => l.visible && l.wmsLayer)
-        .map((layer) => (
-          <WMSTileLayer
-            key={layer.id}
-            url={GEOSERVER_WMS_URL}
-            layers={layer.wmsLayer}
-            format="image/png"
-            transparent
-            opacity={layer.opacity}
-            attribution="GeoServer IDE SEUMA — Prefeitura de Fortaleza"
-          />
-        ))}
-
-      {layers
-        .filter((l) => l.visible && l.geojsonUrl)
-        .map((layer) => (
-          <GeoJsonLayer key={layer.id} layer={layer} />
-        ))}
+      {visibleZones.map((zone) =>
+        zone.polygons.map((poly, pi) => (
+          <Polygon
+            key={`${zone.id}-${pi}`}
+            positions={poly}
+            pathOptions={{
+              color: zone.color,
+              fillColor: zone.color,
+              fillOpacity: 0.35,
+              weight: 2,
+              opacity: 0.8,
+            }}
+          >
+            <Tooltip sticky>
+              <strong>{zone.nome}</strong>
+              <br />
+              {zone.descricao}
+            </Tooltip>
+          </Polygon>
+        ))
+      )}
 
       {allLotes.map((lote) => {
         const isSelected = selectedLote?.iptu === lote.iptu;
@@ -155,6 +153,8 @@ export default function MapView({ layers, selectedLote, allLotes, onLoteClick, f
               {lote.endereco}
               <br />
               Área: {lote.area} m²
+              <br />
+              Zoneamento: {lote.zoneamento}
             </Tooltip>
           </Polygon>
         );

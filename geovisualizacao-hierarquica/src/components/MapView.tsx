@@ -79,7 +79,13 @@ function GeoJsonLayer({ layer }: { layer: MapLayer }) {
   );
 }
 
-export default function MapView({ layers, selectedLote, allLotes, onLoteClick, flyKey }: MapViewProps) {
+export default function MapView({
+  layers,
+  selectedLote,
+  allLotes,
+  onLoteClick,
+  flyKey,
+}: MapViewProps) {
   const fortalezaCenter: [number, number] = [-3.7319, -38.5267];
 
   return (
@@ -110,7 +116,6 @@ export default function MapView({ layers, selectedLote, allLotes, onLoteClick, f
           />
         </LayersControl.Overlay>
       </LayersControl>
-
       <ZoomControl position="topright" />
 
       {layers
@@ -142,19 +147,17 @@ export default function MapView({ layers, selectedLote, allLotes, onLoteClick, f
             pathOptions={{
               color: isSelected ? "#ff4d4f" : "#FFFF00",
               fillColor: isSelected ? "#ff4d4f" : "#FFFF00",
-              fillOpacity: isSelected ? 0.5 : 0.25,
-              weight: isSelected ? 3 : 1.5,
+              fillOpacity: isSelected ? 0.5 : 0.15,
+              weight: isSelected ? 3 : 1,
             }}
-            eventHandlers={{
-              click: () => onLoteClick(lote.iptu),
-            }}
+            eventHandlers={{ click: () => onLoteClick(lote.iptu) }}
           >
             <Tooltip sticky>
               <strong>IPTU: {lote.iptu}</strong>
               <br />
               {lote.endereco}
               <br />
-              Área: {lote.area} m²
+              Área: {lote.area} m² | {lote.zoneamento.zona}
             </Tooltip>
           </Polygon>
         );

@@ -5,29 +5,33 @@ import {
   EnvironmentOutlined,
   AppstoreOutlined,
   HomeOutlined,
+  CompassOutlined,
 } from "@ant-design/icons";
 import MapView from "../components/MapView";
-import LayersPanel from "../components/LayersPanel";
 import IptuPanel from "../components/IptuPanel";
-import { defaultLayers } from "../data/layersData";
+import ConfinantesPanel from "../components/ConfinantesPanel";
 import { iptuLotes } from "../data/iptuData";
-import { analyzeNeighborhood, generatePDF } from "../components/ReportGenerator";
-import type { MapLayer } from "../data/layersData";
-import type { IptuLote } from "../data/iptuData";
+import { calculateEdges, generatePDF } from "../components/ReportGenerator";
+import type { LoteComConfinantes } from "../data/iptuData";
 
 export default function MainPage() {
-  const [layers, setLayers] = useState<MapLayer[]>(defaultLayers);
-  const [showLayers, setShowLayers] = useState(false);
   const [searchAddress, setSearchAddress] = useState("");
   const [searchIptu, setSearchIptu] = useState("");
-  const [filteredLotes, setFilteredLotes] = useState<IptuLote[]>([]);
+  const [filteredLotes, setFilteredLotes] = useState<LoteComConfinantes[]>([]);
   const [selectedIptu, setSelectedIptu] = useState<string | null>(null);
   const [flyKey, setFlyKey] = useState(0);
   const [showResults, setShowResults] = useState(false);
+  const [showConfinantes, setShowConfinantes] = useState(false);
+  const [showEdgeLabels, setShowEdgeLabels] = useState(false);
 
   const selectedLote = useMemo(
     () => iptuLotes.find((l) => l.iptu === selectedIptu) || null,
     [selectedIptu]
+  );
+
+  const edges = useMemo(
+    () => (selectedLote ? calculateEdges(selectedLote) : []),
+    [selectedLote]
   );
 
   const handleSearchAddress = () => {
@@ -53,14 +57,13 @@ export default function MainPage() {
       setShowResults(true);
       return;
     }
-    const results = iptuLotes.filter((l) =>
-      l.iptu.includes(searchIptu.trim())
-    );
+    const results = iptuLotes.filter((l) => l.iptu.includes(searchIptu.trim()));
     setFilteredLotes(results);
     setShowResults(true);
     if (results.length === 0) message.info("IPTU não encontrado");
     else if (results.length === 1) {
       setSelectedIptu(results[0].iptu);
+      setFlyKey((k) => k + 1);
     }
   };
 
@@ -69,25 +72,21 @@ export default function MainPage() {
     setFlyKey((k) => k + 1);
   };
 
-  const handleReport = async (iptu: string) => {
+  const handleReport = (iptu: string) => {
     const lote = iptuLotes.find((l) => l.iptu === iptu);
     if (!lote) return;
-    message.loading({ content: "Consultando camadas reais no GeoServer...", key: "report" });
-    const analysis = await analyzeNeighborhood(lote, layers);
-    generatePDF(lote, analysis);
-    message.success({ content: "Relatório gerado com sucesso!", key: "report" });
+    const e = calculateEdges(lote);
+    generatePDF(lote, e);
+    message.success("Relatório de confinantes gerado com sucesso!");
   };
 
-  const toggleLayer = (id: string) => {
-    setLayers((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, visible: !l.visible } : l))
-    );
-  };
-
-  const setLayerOpacity = (id: string, val: number) => {
-    setLayers((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, opacity: val } : l))
-    );
+  const handleShowConfinantes = () => {
+    if (!selectedLote) {
+      message.info("Selecione um lote primeiro");
+      return;
+    }
+    setShowConfinantes(true);
+    setShowEdgeLabels(true);
   };
 
   return (
@@ -104,7 +103,7 @@ export default function MainPage() {
             }}
           />
           <div style={styles.ideLabel}>
-            <AppstoreOutlined style={{ fontSize: 28, color: "#1890ff" }} />
+            <AppstoreOutlined style={{ fontSize: 28, color: "#2e7d6e" }} />
             <div>
               <strong style={{ fontSize: 16 }}>IDE SEUMA</strong>
               <br />
@@ -113,12 +112,12 @@ export default function MainPage() {
               </span>
             </div>
           </div>
-          <h3 style={styles.title}>Análise de Vizinhança</h3>
+          <h3 style={styles.title}>Gera-Confinantes</h3>
         </div>
         <div style={styles.headerRight}>
           <div style={styles.searchGroup}>
             <Input
-              placeholder="Pesquise o endereço"
+              placeholder="Pesquise pelo endereço"
               value={searchAddress}
               onChange={(e) => setSearchAddress(e.target.value)}
               onPressEnter={handleSearchAddress}
@@ -131,7 +130,7 @@ export default function MainPage() {
               style={{ width: 240 }}
             />
             <Input
-              placeholder="Pesquise pelo número de IPTU (ex.: 0001.001.001)"
+              placeholder="Pesquise pelo número de IPTU"
               value={searchIptu}
               onChange={(e) => setSearchIptu(e.target.value)}
               onPressEnter={handleSearchIptu}
@@ -144,34 +143,13 @@ export default function MainPage() {
               style={{ width: 240 }}
             />
           </div>
-
         </div>
       </header>
 
       {/* MAP AREA */}
       <div style={styles.mapArea}>
-        <div style={styles.dataNotice}>
-          Camadas do mapa: dados reais de Fortaleza (GeoServer IDE SEUMA —
-          Quadras, Lotes, Edificações SEFIN, UC, Hidrografia etc.). Os registros
-          de IPTU listados são fictícios, apenas para demonstração da consulta.
-        </div>
-        {/* Left side buttons */}
+        {/* Side buttons */}
         <div style={styles.sideButtons}>
-          <Tooltip title="Painel de Camadas">
-            <Button
-              shape="circle"
-              icon={<AppstoreOutlined />}
-              onClick={() => setShowLayers(!showLayers)}
-              style={styles.sideBtn}
-            />
-          </Tooltip>
-          <Tooltip title="Zoom inicial">
-            <Button
-              shape="circle"
-              icon={<HomeOutlined />}
-              style={styles.sideBtn}
-            />
-          </Tooltip>
           <Tooltip title="Listar todos os IPTUs">
             <Button
               shape="circle"
@@ -183,29 +161,57 @@ export default function MainPage() {
               style={styles.sideBtn}
             />
           </Tooltip>
+          <Tooltip title="Zoom inicial">
+            <Button
+              shape="circle"
+              icon={<HomeOutlined />}
+              style={styles.sideBtn}
+            />
+          </Tooltip>
+          <Tooltip title="Ver confinantes do lote selecionado">
+            <Button
+              shape="circle"
+              icon={<CompassOutlined />}
+              onClick={handleShowConfinantes}
+              type={showConfinantes ? "primary" : "default"}
+              style={styles.sideBtn}
+            />
+          </Tooltip>
+          <Tooltip title="Mostrar/ocultar vértices e arestas">
+            <Button
+              shape="circle"
+              icon={<AppstoreOutlined />}
+              onClick={() => setShowEdgeLabels(!showEdgeLabels)}
+              type={showEdgeLabels ? "primary" : "default"}
+              style={styles.sideBtn}
+            />
+          </Tooltip>
         </div>
 
         {/* Map */}
         <MapView
-          layers={layers}
-          selectedLote={selectedLote}
           allLotes={iptuLotes}
+          selectedLote={selectedLote}
           onLoteClick={handleSelectLote}
           flyKey={flyKey}
+          showEdgeLabels={showEdgeLabels}
         />
 
-        {/* Layers Panel */}
-        {showLayers && (
-          <LayersPanel
-            layers={layers}
-            onToggle={toggleLayer}
-            onOpacity={setLayerOpacity}
-            onClose={() => setShowLayers(false)}
+        {/* Confinantes Panel */}
+        {showConfinantes && selectedLote && (
+          <ConfinantesPanel
+            lote={selectedLote}
+            edges={edges}
+            onReport={() => handleReport(selectedLote.iptu)}
+            onClose={() => {
+              setShowConfinantes(false);
+              setShowEdgeLabels(false);
+            }}
           />
         )}
 
         {/* Results Panel */}
-        {showResults && filteredLotes.length > 0 && (
+        {showResults && filteredLotes.length > 0 && !showConfinantes && (
           <IptuPanel
             lotes={filteredLotes}
             selectedIptu={selectedIptu}
@@ -220,6 +226,11 @@ export default function MainPage() {
       <div style={styles.footer}>
         <span>Lat: {selectedLote ? selectedLote.center[0].toFixed(4) : "-"}</span>
         <span>Long: {selectedLote ? selectedLote.center[1].toFixed(4) : "-"}</span>
+        {selectedLote && (
+          <span style={{ marginLeft: 20, color: "#2e7d6e" }}>
+            IPTU: {selectedLote.iptu} | {selectedLote.endereco}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -286,21 +297,6 @@ const styles: Record<string, React.CSSProperties> = {
   },
   sideBtn: {
     background: "#fff",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-  },
-  dataNotice: {
-    position: "absolute",
-    bottom: 8,
-    left: "50%",
-    transform: "translateX(-50%)",
-    zIndex: 900,
-    background: "rgba(255,255,255,0.92)",
-    padding: "6px 14px",
-    borderRadius: 6,
-    fontSize: 11,
-    color: "#555",
-    maxWidth: 640,
-    textAlign: "center",
     boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
   },
   footer: {
