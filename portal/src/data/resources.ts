@@ -182,7 +182,7 @@ export const resources: Resource[] = [
     escutaCidada: false,
     servicoCidadao: true,
     geodesign: true,
-    appUrl: "https://dist-ywewxmym.devinapps.com",
+    appUrl: "https://dist-dohjucho.devinapps.com",
     hasApp: true,
   },
   {
@@ -214,7 +214,7 @@ export const resources: Resource[] = [
     escutaCidada: false,
     servicoCidadao: true,
     geodesign: false,
-    appUrl: "https://dist-lhpkdrcb.devinapps.com",
+    appUrl: "https://dist-jrotknga.devinapps.com",
     hasApp: true,
   },
   {
@@ -231,7 +231,7 @@ export const resources: Resource[] = [
     escutaCidada: false,
     servicoCidadao: true,
     geodesign: false,
-    appUrl: "https://dist-dabcnqfc.devinapps.com",
+    appUrl: "https://dist-ntgybusm.devinapps.com",
     hasApp: true,
   },
   {
@@ -259,7 +259,7 @@ export const resources: Resource[] = [
     escutaCidada: false,
     servicoCidadao: true,
     geodesign: false,
-    appUrl: "https://dist-opungpbj.devinapps.com",
+    appUrl: "https://dist-csqvdquy.devinapps.com",
     hasApp: true,
   },
   {
@@ -271,7 +271,7 @@ export const resources: Resource[] = [
     escutaCidada: false,
     servicoCidadao: true,
     geodesign: false,
-    appUrl: "https://dist-afwexlxr.devinapps.com",
+    appUrl: "https://dist-pgrrsnrh.devinapps.com",
     hasApp: true,
   },
   {
@@ -338,7 +338,7 @@ export const resources: Resource[] = [
     escutaCidada: true,
     servicoCidadao: true,
     geodesign: true,
-    appUrl: "https://dist-clnvqjgc.devinapps.com",
+    appUrl: "https://dist-ybepisoo.devinapps.com",
     hasApp: true,
   },
   {
@@ -413,7 +413,7 @@ export const resources: Resource[] = [
     escutaCidada: false,
     servicoCidadao: true,
     geodesign: true,
-    appUrl: "https://dist-uiufzglb.devinapps.com",
+    appUrl: "https://dist-nqycuxwk.devinapps.com",
     hasApp: true,
   },
   {
@@ -431,7 +431,7 @@ export const resources: Resource[] = [
     escutaCidada: false,
     servicoCidadao: true,
     geodesign: true,
-    appUrl: "https://dist-esjzbwcs.devinapps.com",
+    appUrl: "https://dist-kbptygqz.devinapps.com",
     hasApp: true,
   },
   {
